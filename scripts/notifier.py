@@ -7,7 +7,6 @@ import subprocess
 from typing import Mapping, Sequence
 
 NOT_LISTED = "Not listed"
-SOURCE = "zero2sudo"
 
 _EMPLOYMENT_LABELS = {
     "internship": "Internship",
@@ -34,14 +33,14 @@ def job_type(job: Mapping) -> str:
     return " ".join(parts) if parts else NOT_LISTED
 
 
-def format_message(items: Sequence[Mapping]) -> str:
+def format_message(items: Sequence[Mapping], source: str) -> str:
     """Format one Story's jobs, or one Story's events (rows with kind='event')."""
     if items and items[0].get("kind") == "event":
-        return format_events(items)
-    return format_jobs(items)
+        return format_events(items, source)
+    return format_jobs(items, source)
 
 
-def format_events(events: Sequence[Mapping]) -> str:
+def format_events(events: Sequence[Mapping], source: str) -> str:
     if len(events) == 1:
         e = events[0]
         return "\n".join([
@@ -57,7 +56,7 @@ def format_events(events: Sequence[Mapping]) -> str:
             "Register:",
             _v(e.get("application_url")),
             "",
-            f"Source: {SOURCE}",
+            f"Source: {source}",
         ])
 
     blocks = ["NEW EVENTS"]
@@ -69,11 +68,11 @@ def format_events(events: Sequence[Mapping]) -> str:
             f"Where: {_v(e.get('location'))}",
             e.get("application_url") or f"Register: {NOT_LISTED}",
         ]))
-    blocks.append(f"Source: {SOURCE}")
+    blocks.append(f"Source: {source}")
     return "\n\n".join(blocks)
 
 
-def format_jobs(jobs: Sequence[Mapping]) -> str:
+def format_jobs(jobs: Sequence[Mapping], source: str) -> str:
     if len(jobs) == 1:
         j = jobs[0]
         return "\n".join([
@@ -89,7 +88,7 @@ def format_jobs(jobs: Sequence[Mapping]) -> str:
             "Apply:",
             _v(j.get("application_url")),
             "",
-            f"Source: {SOURCE}",
+            f"Source: {source}",
         ])
 
     blocks = ["NEW JOBS"]
@@ -102,7 +101,7 @@ def format_jobs(jobs: Sequence[Mapping]) -> str:
             j.get("compensation") or f"Compensation: {NOT_LISTED}",
             j.get("application_url") or f"Apply: {NOT_LISTED}",
         ]))
-    blocks.append(f"Source: {SOURCE}")
+    blocks.append(f"Source: {source}")
     return "\n\n".join(blocks)
 
 

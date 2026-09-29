@@ -108,7 +108,7 @@ def test_event_without_link_keeps_null_url():
     c = parse_response(response(is_job=False, relevance="irrelevant", events=[EVENT]), None)
     assert c.events[0].registration_url is None
     assert "Register:\nNot listed" in format_message([{"kind": "event", "company": "Jane Street",
-                                                      "role": "Info Session", "application_url": None}])
+                                                      "role": "Info Session", "application_url": None}], "zero2sudo")
 
 
 def test_prompt_includes_profile_majors():
@@ -125,19 +125,19 @@ def test_job_extraction_with_code_fences_and_prose():
 def test_missing_compensation():
     c = parse_response(response(jobs=[{**DATADOG, "compensation": None}]))
     assert c.jobs[0].compensation is None
-    assert "Compensation: Not listed" in format_message([vars(c.jobs[0])])
+    assert "Compensation: Not listed" in format_message([vars(c.jobs[0])], "zero2sudo")
 
 
 def test_missing_location():
     c = parse_response(response(jobs=[{**DATADOG, "location": "null"}]))
     assert c.jobs[0].location is None
-    assert "Location: Not listed" in format_message([vars(c.jobs[0])])
+    assert "Location: Not listed" in format_message([vars(c.jobs[0])], "zero2sudo")
 
 
 def test_missing_url():
     c = parse_response(response(jobs=[{**DATADOG, "application_url": None}]), link_url=None)
     assert c.jobs[0].application_url is None
-    assert "Apply:\nNot listed" in format_message([vars(c.jobs[0])])
+    assert "Apply:\nNot listed" in format_message([vars(c.jobs[0])], "zero2sudo")
 
 
 def test_story_link_wins_over_model_url():

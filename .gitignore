@@ -24,3 +24,6 @@ logs/
 CLAUDE.md
 /docs
 /.claude/
+
+# Exported Instagram sessions (live credentials)
+*session*.json

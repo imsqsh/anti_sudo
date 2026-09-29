@@ -1,0 +1,18 @@
+# Never send secrets or local state into the build context
+.env
+.env.*
+!.env.example
+*session*.json
+*.sqlite*
+browser-profile/
+screenshots/
+logs/
+
+.git
+.venv
+.pytest_cache
+**/__pycache__
+CLAUDE.md
+docs
+.claude
+tests

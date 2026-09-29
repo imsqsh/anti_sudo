@@ -39,7 +39,7 @@ class FakeLLM:
         self.results = results  # story_key -> Classification | Exception
         self.calls = []
 
-    def __call__(self, image_path, link_url, model, filtering=None):
+    def __call__(self, image_path, link_url, model, filtering=None, username=None):
         key = image_path.stem
         self.calls.append(key)
         result = self.results[key]

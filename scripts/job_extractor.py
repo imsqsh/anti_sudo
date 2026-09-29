@@ -28,7 +28,7 @@ RELEVANCE_CATEGORIES = {
 EMPLOYMENT_TYPES = {"internship", "new_grad", "full_time", "other"}
 
 PROMPT_TEMPLATE = """\
-You are reading one Instagram Story image from the account "zero2sudo", which posts \
+You are reading one Instagram Story image from the account "{username}", which posts \
 tech internship / new-grad job openings and tech recruiting events, mixed with unrelated content.
 
 Link sticker URL attached to this Story (may be null): {link_url}
@@ -126,9 +126,10 @@ class Classification:
     events: list[Event] = field(default_factory=list)
 
 
-def build_prompt(link_url: str | None, filtering: dict | None = None) -> str:
+def build_prompt(link_url: str | None, filtering: dict | None = None, username: str = "the account") -> str:
     education = (filtering or {}).get("education") or {}
     return PROMPT_TEMPLATE.format(
+        username=username,
         link_url=link_url or "null",
         degree_levels=", ".join(education.get("degree_levels") or ["bachelors", "masters"]),
         majors=", ".join(education.get("majors") or ["Computer Science"]),
@@ -241,14 +242,15 @@ def parse_response(text: str, link_url: str | None = None) -> Classification:
 
 
 def classify_story(
-    image_path: Path, link_url: str | None, model: str, filtering: dict | None = None, timeout: int = 180,
+    image_path: Path, link_url: str | None, model: str, filtering: dict | None = None,
+    username: str = "the account", timeout: int = 180,
 ) -> Classification:
     """Run one `openclaw infer model run` call on the Story image."""
     cmd = [
         "openclaw", "infer", "model", "run",
         "--model", model,
         "--file", str(image_path),
-        "--prompt", build_prompt(link_url, filtering),
+        "--prompt", build_prompt(link_url, filtering, username),
         "--json",
     ]
     try:

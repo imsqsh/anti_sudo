@@ -1,0 +1,9 @@
+#!/bin/sh
+# Run one of the project's commands inside the container:
+#   anti-sudo monitor [--dry-run|--live|--baseline|--limit N]
+#   anti-sudo instagram_login --import /data/ig-session.json
+set -e
+cmd="${1:?usage: anti-sudo <monitor|instagram_login> [args...]}"
+shift
+cd /opt/anti-sudo
+exec /opt/anti-sudo/.venv/bin/python -m "scripts.${cmd}" "$@"

@@ -1,4 +1,4 @@
-"""One monitoring cycle: fetch Stories -> classify new ones -> dedupe jobs -> WhatsApp.
+"""One monitoring cycle: fetch Stories -> classify new ones -> dedupe jobs/events -> WhatsApp.
 
 Usage:
   uv run python -m scripts.monitor              # one cycle (respects DRY_RUN in .env)
@@ -34,8 +34,8 @@ FAILURE_ALERT_THRESHOLD = 3  # consecutive failed runs (~90 min) before alerting
 
 AUTH_EXPIRED_MSG = (
     "Instagram authentication has expired.\n"
-    "Please reauthenticate the persistent browser session:\n"
-    "uv run python -m scripts.instagram_login"
+    "Please reauthenticate the persistent browser session "
+    "(see README: Instagram login)."
 )
 
 
@@ -63,13 +63,13 @@ class Report:
 
 # Dependency seams so tests can mock Instagram, the LLM, and WhatsApp.
 Fetcher = Callable[[Settings, Database], list[FetchedStory]]
-Classifier = Callable[[Path, str | None, str, dict], Classification]
+Classifier = Callable[[Path, str | None, str, dict, str], Classification]
 Sender = Callable[[str, str], str]
 
 
 def fetch_with_browser(settings: Settings, db: Database) -> list[FetchedStory]:
     """Fetch active Stories; download images only for ones that still need processing."""
-    with instagram.open_browser(settings.browser_profile_dir, headless=True) as context:
+    with instagram.open_browser(settings.browser_profile_dir, headless=True, channel=settings.browser_channel) as context:
         log.info("Checking %s", settings.instagram_username)
         stories = instagram.fetch_stories(context, settings.instagram_username)
         log.info("Instagram session authenticated")
@@ -167,7 +167,7 @@ def _process_story(f: FetchedStory, settings, db: Database, report: Report, clas
     try:
         if not f.image_path.exists():
             raise ExtractionError("Story image was not downloaded")
-        result = classifier(f.image_path, f.story.link_url, settings.llm_model, filtering)
+        result = classifier(f.image_path, f.story.link_url, settings.llm_model, filtering, settings.instagram_username)
     except ExtractionError as e:
         gave_up = db.mark_failed(key, str(e))
         log.error("Story %s: classification failed (%s)%s", key, e, "; giving up" if gave_up else "; will retry")
@@ -223,7 +223,7 @@ def _send_pending(settings: Settings, db: Database, report: Report, dry_run: boo
     """Send every unsent job (this run's plus earlier failed deliveries), one message per Story."""
     for _group, rows in db.pending_notifications().items():
         jobs = [dict(r) for r in rows]
-        message = format_message(jobs)
+        message = format_message(jobs, settings.instagram_username)
         if dry_run:
             log.info("DRY RUN — would send WhatsApp message:\n%s", message)
             continue
@@ -249,8 +249,8 @@ def _record_failure(db: Database, settings: Settings, dry_run: bool, sender: Sen
     if count >= FAILURE_ALERT_THRESHOLD:
         _alert_once(
             db, "failure_alert_sent",
-            f"zero2sudo monitor: Instagram check has failed {count} runs in a row. "
-            "Check the logs in ~/openclaw-instagram-jobs/logs/.",
+            f"{settings.instagram_username} monitor: Instagram check has failed {count} runs in a row. "
+            f"Check the logs in {settings.data_dir / 'logs'}.",
             settings, dry_run, sender,
         )
 
@@ -302,7 +302,7 @@ def setup_logging(log_dir: Path) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Check zero2sudo Stories once.")
+    parser = argparse.ArgumentParser(description="Check the configured account's Stories once.")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="never send WhatsApp messages")
     mode.add_argument("--live", action="store_true", help="send even if DRY_RUN=true in .env")

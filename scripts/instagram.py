@@ -26,13 +26,17 @@ class AuthExpiredError(RuntimeError):
 
 
 @contextmanager
-def open_browser(profile_dir: Path, headless: bool) -> Iterator[BrowserContext]:
-    """Persistent Chrome profile so the Instagram login survives between runs."""
+def open_browser(profile_dir: Path, headless: bool, channel: str | None = "chrome") -> Iterator[BrowserContext]:
+    """Persistent browser profile so the Instagram login survives between runs.
+
+    channel="chrome" uses the installed Google Chrome; None uses Playwright's bundled Chromium
+    (what the Docker image uses).
+    """
     profile_dir.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             user_data_dir=profile_dir,
-            channel="chrome",
+            channel=channel,
             headless=headless,
             viewport={"width": 1280, "height": 900},
         )

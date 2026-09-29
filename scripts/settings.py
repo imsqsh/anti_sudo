@@ -31,6 +31,8 @@ class Settings:
     dry_run: bool
     data_dir: Path
     config: dict
+    # Playwright browser channel: "chrome" = installed Google Chrome; "" = Playwright's bundled Chromium.
+    browser_channel: str | None = "chrome"
 
     @property
     def db_path(self) -> Path:
@@ -47,7 +49,8 @@ class Settings:
 
 def load_settings(config_path: Path | None = None) -> Settings:
     _load_dotenv(REPO_ROOT / ".env")
-    config = yaml.safe_load((config_path or REPO_ROOT / "config.yaml").read_text())
+    config_path = config_path or Path(os.environ.get("CONFIG_PATH", REPO_ROOT / "config.yaml"))
+    config = yaml.safe_load(config_path.read_text())
 
     data_dir = Path(os.environ.get("DATA_DIR", "~/openclaw-instagram-jobs")).expanduser()
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -59,4 +62,5 @@ def load_settings(config_path: Path | None = None) -> Settings:
         dry_run=os.environ.get("DRY_RUN", "false").lower() in ("1", "true", "yes"),
         data_dir=data_dir,
         config=config,
+        browser_channel=os.environ.get("BROWSER_CHANNEL", "chrome") or None,
     )

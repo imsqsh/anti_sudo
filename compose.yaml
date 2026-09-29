@@ -1,0 +1,21 @@
+services:
+  anti-sudo:
+    build: .
+    image: anti-sudo:local
+    restart: unless-stopped
+    init: true
+    # WHATSAPP_TARGET and DRY_RUN come from your .env (never baked into the image).
+    env_file: .env
+    environment:
+      DATA_DIR: /data
+      BROWSER_CHANNEL: ""
+    volumes:
+      - openclaw-state:/home/node/.openclaw   # OpenClaw config, API key, WhatsApp link, automations
+      - monitor-data:/data                    # SQLite DB, Instagram browser profile, logs
+      - ./config.yaml:/opt/anti-sudo/config.yaml:ro
+    shm_size: 1gb   # Chromium needs more than Docker's 64 MB default
+    # No ports are published: every CLI call runs inside the container via `docker compose exec`.
+
+volumes:
+  openclaw-state:
+  monitor-data:
