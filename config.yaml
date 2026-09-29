@@ -1,0 +1,52 @@
+instagram:
+  username: zero2sudo
+  check_interval: 30m
+
+llm:
+  model: anthropic/claude-opus-5-5
+
+notifications:
+  channel: whatsapp
+
+filtering:
+  employment_types:
+    - internship
+    - new_grad
+  categories:
+    - software_engineering
+    - machine_learning
+    - artificial_intelligence
+    - data_engineering
+    - systems
+    - infrastructure
+    - cybersecurity
+    - research
+  preferred_locations:
+    - Seattle
+    - San Francisco
+    - Bay Area
+    - New York
+    - Boston
+    - Philadelphia
+    - remote
+  # Jobs only listed in these countries are dropped.
+  exclude_countries:
+    - Canada
+  # Jobs whose listed pay is below this (hourly USD; salaries / 2080) are dropped. Unlisted pay is kept.
+  min_hourly_usd: 30
+  # Jobs are dropped only if the posting EXPLICITLY excludes these; silence means eligible.
+  education:
+    degree_levels:
+      - bachelors
+      - masters
+    majors:
+      - Computer Science
+      - Computer and Information Science
+      - Computer Engineering
+      - Data Science
+      - Software Engineering
+      - Electrical and Computer Engineering
+      - Artificial Intelligence
+      - Mathematics / Statistics (with CS focus)
+  # Recruiting / tech events (info sessions, hackathons, conferences) are always sent.
+  send_events: true

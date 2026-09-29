@@ -1,8 +1,25 @@
+# Python
 __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
+
+# Secrets (keep the template)
 .env*
+!.env.example
+
+# Runtime state — never commit
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+browser-profile/
+screenshots/
+logs/
+*.log
+
+# Local
 .DS_Store
 CLAUDE.md
 /docs
