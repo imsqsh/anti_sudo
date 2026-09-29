@@ -38,12 +38,6 @@ OpenClaw automation — every 30 min, runs a command (no AI call by itself)
        └─ WhatsApp via `openclaw message send`
 ```
 
-- **[OpenClaw](https://openclaw.ai)** is the orchestrator: scheduler, model access, and the WhatsApp link.
-- The AI is only called when a genuinely new Story appears; quiet runs cost nothing.
-- The model only reports what's visible. Missing fields say `Not listed`, never a guess.
-  Links come from the Story's own link sticker, with redirect and tracking parameters removed.
-- Failures are retried next run. If Instagram logs you out, or checks fail 3 runs in a row, you get a WhatsApp alert.
-
 ## What you need
 
 | | Notes |
@@ -204,29 +198,10 @@ Local: `uv run python -m scripts.<name>`.
   risk, and preferably with a secondary account.
 - It reads what an account posts publicly. Don't point it at private individuals.
 
-## Troubleshooting
-
-| Symptom | Fix |
-|---|---|
-| WhatsApp: `not listed in the configured WhatsApp allowFrom` | Put the number in E.164 (`+1...`) in `channels.whatsapp.allowFrom`. |
-| `Instagram authentication has expired` | Log in again (step 3). Datacenter hosts need this more often. |
-| `Stories page loaded but no Story data could be parsed` | Instagram changed its page. The parser lives in `scripts/instagram.py` (`parse_stories`). |
-| Too many / too few alerts | Tune `config.yaml`. Every decision, including why a job was filtered out, is in `monitor.log`. |
-| High AI spend | Use a cheaper model in `config.yaml`; check the OpenClaw heartbeat is off (`openclaw automations list`). |
-
 ## Development
 
 ```bash
-uv sync && uv run pytest     # Instagram, the model and WhatsApp are all mocked; no credentials needed
+uv sync && uv run pytest
 ```
-
-| File | Role |
-|---|---|
-| `scripts/instagram.py` | All Instagram-specific logic (page parsing, login checks, link unwrapping) |
-| `scripts/job_extractor.py` | Prompt, model call, JSON validation, per-job filters |
-| `scripts/database.py` + `database/schema.sql` | Seen Stories, deduplicated jobs/events, alert state |
-| `scripts/notifier.py` | WhatsApp message formats and sending |
-| `scripts/monitor.py` | One full cycle, error handling, alerts, logging |
-| `Dockerfile`, `compose.yaml`, `docker/anti-sudo` | Container packaging |
 
 MIT licensed.
